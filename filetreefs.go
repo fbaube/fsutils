@@ -6,9 +6,9 @@ import (
 	"os"
 	FP "path/filepath"
 	S "strings"
-	"sync"
 
 	FU "github.com/fbaube/fileutils"
+	ON "github.com/fbaube/orderednodes"
 )
 
 /*
@@ -47,54 +47,73 @@ should write is a test that constructs an instance of the new FS and then
 passes it to fstest.TestFS for inspection.
 */
 
-type DirTreeFS struct {
-	inputFS  fs.FS
-	rootPath string
-	sync.Mutex
-	isLocked bool
-	root     *dirPathNord
-	asSlice  []*dirPathNord
+type FileTreeFS struct {
+	baseFS /*
+		inputFS  fs.FS
+		rootPath string
+		sync.Mutex
+		isLocked bool */
+	root    *ON.FileNord
+	asSlice []*ON.FileNord
+	asMap   map[string]*ON.FileNord // string is Rel.Path
 }
 
-// type TreeBldrState struct {
-var lastNodePerDirLevel []*dirPathNord
+// ## var lastNodePerDirLevel []*ON.FileNord
 
-// }
+var pFTFS *FileTreeFS
 
-var pDTFS *DirTreeFS
+// NewFileTreeFS is duh.
+func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
+	pFTFS = new(FileTreeFS)
+	// Initialize embedded baseFS
+	pFTFS.baseFS.rootPath = path
+	pFTFS.baseFS.inputFS = os.DirFS(path)
+	println("fss.newFileTreeFS:", pFTFS.baseFS.rootPath)
+	// Initialize slice & map
+	pFTFS.asSlice = make([]*ON.FileNord, 0)
+	pFTFS.asMap = make(map[string]*ON.FileNord)
 
-func (dtfs *DirTreeFS) Lock() (success bool) {
-	if dtfs.isLocked {
-		return false
+	// FIRST PASS
+	// Load slice & map
+	e := fs.WalkDir(pFTFS.inputFS, ".", wfnBuildFileTree)
+	if e != nil {
+		panic("fss.newFileTreeFS: " + e.Error())
 	}
-	dtfs.isLocked = true
-	dtfs.Mutex.Lock()
-	return true
-}
-func (dtfs *DirTreeFS) Unlock() {
-	if !dtfs.isLocked {
-		panic("Unlock failed")
+	fmt.Printf("fss.newFileTreeFS: got %d nords \n", len(pFTFS.asSlice))
+	// SECOND PASS
+	// Go down slice to identify parent nords and link together.
+	for _, n := range pFTFS.asSlice {
+		// Is child of root ?
+		if !S.Contains(n.Path, FU.PathSep) {
+			pFTFS.root.AddKid(n)
+		} else {
+			itsDir := FP.Dir(n.Path)
+			var par *ON.FileNord
+			var ok bool
+			if par, ok = pFTFS.asMap[itsDir]; !ok {
+				panic(n.Path)
+			}
+			par.AddKid(n)
+		}
 	}
-	dtfs.Mutex.Unlock()
-	dtfs.isLocked = false
-}
-func (dtfs *DirTreeFS) IsLocked() bool { return dtfs.isLocked }
 
-func NewDirTreeFS(path string, okayFilexts []string) *DirTreeFS {
-	// var e error
-	pDTFS = new(DirTreeFS)
-	pDTFS.asSlice = make([]*dirPathNord, 0)
-	pDTFS.rootPath = path
-	fmt.Println("on.newTreeFS.cwd:", pDTFS.rootPath)
-	pDTFS.inputFS = os.DirFS(pDTFS.rootPath)
-	// func WalkDir(fsys FS, root string, wfn WalkDirFunc) error
-	fs.WalkDir(pDTFS.inputFS, ".", wfnBuildTree)
-	return pDTFS
+	println("DUMP LIST")
+	for _, n := range pFTFS.asSlice {
+		println(n.LinePrefixString(), n.LineSummaryString())
+	}
+	println("DUMP MAP")
+	for k, v := range pFTFS.asMap {
+		fmt.Printf("%s\t:: %s %s \n", k, v.LinePrefixString(), v.LineSummaryString())
+	}
+	println("DUMP TREE")
+	pFTFS.root.PrintAll(os.Stdout)
+	return pFTFS
 }
 
-/* // Open is a dummy function, just here to satisfy an interface.
-func (p *TreeFS) Open(path string) (fs.File, error) {
-	return nil, nil } */
+// Open is a dummy function, just here to satisfy an interface.
+func (p *FileTreeFS) Open(path string) (fs.File, error) {
+	return p.inputFS.Open(path)
+}
 
 /* type DirEntry interface {
     IsDir() bool
@@ -105,51 +124,58 @@ func (p *TreeFS) Open(path string) (fs.File, error) {
 
 func mustInitRoot() bool {
 	var needsInit, didDoInit bool
-	needsInit = (len(pDTFS.asSlice) == 0 && len(lastNodePerDirLevel) == 0)
-	didDoInit = (len(pDTFS.asSlice) > 0 && len(lastNodePerDirLevel) > 0)
+	needsInit = (len(pFTFS.asSlice) == 0 && len(pFTFS.asMap) == 0) // && len(lastNodePerDirLevel) == 0)
+	didDoInit = (len(pFTFS.asSlice) > 0 && len(pFTFS.asMap) > 0)   // && len(lastNodePerDirLevel) > 0)
 	if !(needsInit || didDoInit) {
-		panic("doRoot: illegal state")
+		panic("mustInitRoot: illegal state")
 	}
 	return needsInit
 }
 
+// wfnBuildFileTree is
 // type WalkDirFunc func(path string, d DirEntry, err error) error
-func wfnBuildTree(path string, d fs.DirEntry, err error) error {
+func wfnBuildFileTree(path string, d fs.DirEntry, err error) error {
+	var pN *ON.FileNord
 	// ROOT NODE ?
 	if mustInitRoot() {
-		pN := new(dirPathNord)
-		pN.absFP = FU.AbsFP(pDTFS.rootPath)
-		pN.argPath = ""
-		pDTFS.root = pN
-		pDTFS.asSlice = append(pDTFS.asSlice, pN)
+		pN = new(ON.FileNord)
+		pN.SetIsRoot(true)
+		pN.Path = ""
+		pN.AbsFilePath = FU.AbsFP(pFTFS.rootPath)
+		pFTFS.root = pN
+		pFTFS.asSlice = append(pFTFS.asSlice, pN)
+		pFTFS.asMap[path] = pN
 		// len is 0, but...
-		lastNodePerDirLevel = append(lastNodePerDirLevel, pN)
+		// ## lastNodePerDirLevel = append(lastNodePerDirLevel, pN)
 		// len is now 1
-		println("Did root node; cwd:", pN.absFP)
+		fmt.Printf("Root node FP: rel<%s> abs<%s> \n", path, pN.AbsFilePath)
 		return nil
 	}
-	// Filter out non-content
+	// Filter out hidden and emacs backup
 	if S.HasPrefix(path, ".") || S.Contains(path, "/.") || S.HasSuffix(path, "~") {
-		println("Path rejected:", path)
+		// println("Path rejected:", path)
 		return nil
 	}
 	// ALLOCATE AND INIT Nord
-	pNord := new(dirPathNord)
-	pNord.argPath = path
-	pNord.absFP = FU.AbsFP(FP.Join(pDTFS.rootPath, path))
-	// COUNT SLASHES
-	nSlashes := S.Count(path, "/")
+	pN = new(ON.FileNord)
+	pN.Path = path
+	pN.AbsFilePath = FU.AbsFP(FP.Join(pFTFS.rootPath, path))
+	pFTFS.asSlice = append(pFTFS.asSlice, pN)
+	pFTFS.asMap[path] = pN
+	// println("Path OK:", pN.AbsFilePath)
 
-	// If Parent is Root
-	if 0 == nSlashes {
-		pDTFS.root.AddKid(pNord) // (&pNode.Nord)
-		return nil
-	}
+	/*
+		// If Parent is Root
+		if 0 == nSlashes {
+			pFTFS.root.AddKid(pN) // (&pNode.Nord)
+			return nil
+		}
+	*/
 	// Parent is not root, so will have to locate parent.
 
 	// Check length
-	lenLNPDL := len(lastNodePerDirLevel)
-	fmt.Printf("%d\n", lenLNPDL)
+	// ## lenLNPDL := len(lastNodePerDirLevel)
+	// fmt.Printf("%d\n", lenLNPDL)
 	// Find Parent
 
 	return nil // FIXME

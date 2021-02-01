@@ -10,31 +10,35 @@ import (
 	ON "github.com/fbaube/orderednodes"
 )
 
-type PathPropsDirTreeFS struct {
-	inputFS fs.FS
+type FilePropsTreeFS struct {
+	baseFS /*
+		inputFS  fs.FS
+		rootPath string
+		sync.Mutex
+		isLocked bool */
 	root    *ON.FilePropsNord
 	asSlice []*ON.FilePropsNord
+	asMap   map[string]*ON.FilePropsNord // string is Rel.Path
 }
 
-var ptCWD string
-var ptROOT *ON.FilePropsNord
-var ptNEXSEQ int
+// var ptNEXSEQ int
 
-func NewPathPropsDirTreeFS(path string, okayFilexts []string) *PathPropsDirTreeFS {
+var pFPTFS *FilePropsTreeFS
+
+func NewFilePropsTreeFS(path string, okayFilexts []string) *FilePropsTreeFS {
+
 	// var e error
-	var pFS *PathPropsDirTreeFS
-	ptCWD = path
-	fmt.Println("on.newpptfs:", ptCWD)
-	pFS = new(PathPropsDirTreeFS)
-	pFS.inputFS = os.DirFS(ptCWD)
-	// func WalkDir(fsys FS, root string, fn WalkDirFunc) error
-	ptROOT = nil
-	ptNEXSEQ = 0
-	fs.WalkDir(pFS.inputFS, ".", wfnBuildPPtree)
-	return pFS
+	pFPTFS = new(FilePropsTreeFS)
+	pFPTFS.asSlice = make([]*ON.FilePropsNord, 0)
+	pFPTFS.rootPath = path
+	fmt.Println("on.newFilePropsTreeFS.cwd:", pFPTFS.rootPath)
+	pFPTFS.inputFS = os.DirFS(pFPTFS.rootPath)
+	// func WalkDir(fsys FS, root string, wfn WalkDirFunc) error
+	fs.WalkDir(pFPTFS.inputFS, ".", wfnBuildFilePropsTree)
+	return pFPTFS
 }
 
-func (p *PathPropsDirTreeFS) Open(path string) (fs.File, error) {
+func (p *FilePropsTreeFS) Open(path string) (fs.File, error) {
 	return p.Open(path)
 }
 
@@ -50,8 +54,8 @@ type DirEntry interface {
 }
 */
 
-// type wfnBuildPPtree func(path string, d DirEntry, err error) error
-func wfnBuildPPtree(path string, d fs.DirEntry, err error) error {
+// type wfnBuilwfnBuildFilePropsTreedPPtree func(path string, d DirEntry, err error) error
+func wfnBuildFilePropsTree(path string, d fs.DirEntry, err error) error {
 	var pNode *ON.FilePropsNord
 	var pPP *FU.PathProps
 	// Filter out non-content
@@ -70,25 +74,18 @@ func wfnBuildPPtree(path string, d fs.DirEntry, err error) error {
 	pNode.PathProps = *pPP
 	// ROOT ?
 	if path == "." {
-		if ptROOT != nil {
-			panic("ptROOT not nil")
+		if pFPTFS.root != nil {
+			panic("pFPTFS.root not nil")
 		}
-		if ptNEXSEQ != 0 {
-			panic("ptNEXSEQ not 0")
-		}
-		ptROOT = pNode
-		ptNEXSEQ = 1
+		pFPTFS.root = pNode
 		return nil
 	}
-	if ptROOT == nil {
-		panic("ptROOT is nil")
-	}
-	if ptNEXSEQ == 0 {
-		panic("ptNEXSEQ is 0")
+	if pFPTFS.root == nil {
+		panic("pFPTFS.root is nil")
 	}
 	// If Parent is Root
 	if !S.Contains(path, "/") {
-		ptROOT.AddKid(&pNode.Nord)
+		pFPTFS.root.AddKid(&pNode.Nord)
 		return nil
 	}
 	// Find Parent
