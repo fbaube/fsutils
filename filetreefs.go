@@ -12,6 +12,13 @@ import (
 )
 
 /*
+var SF ON.StringFunc
+func init() {
+	SF = ON.NordSummaryString
+}
+*/
+
+/*
 https://benjamincongdon.me/blog/2021/01/21/A-Tour-of-Go-116s-iofs-package/
 
 The Go library allows for more complex behavior by providing other file-
@@ -48,14 +55,10 @@ passes it to fstest.TestFS for inspection.
 */
 
 type FileTreeFS struct {
-	baseFS /*
-		inputFS  fs.FS
-		rootPath string
-		sync.Mutex
-		isLocked bool */
-	root    *ON.FileNord
-	asSlice []*ON.FileNord
-	asMap   map[string]*ON.FileNord // string is Rel.Path
+	baseFS
+	rootNord *ON.Nord
+	asSlice  []*ON.Nord
+	asMap    map[string]*ON.Nord // string is Rel.Path
 }
 
 // ## var lastNodePerDirLevel []*ON.FileNord
@@ -70,8 +73,8 @@ func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
 	pFTFS.baseFS.inputFS = os.DirFS(path)
 	println("fss.newFileTreeFS:", pFTFS.baseFS.rootPath)
 	// Initialize slice & map
-	pFTFS.asSlice = make([]*ON.FileNord, 0)
-	pFTFS.asMap = make(map[string]*ON.FileNord)
+	pFTFS.asSlice = make([]*ON.Nord, 0)
+	pFTFS.asMap = make(map[string]*ON.Nord)
 
 	// FIRST PASS
 	// Load slice & map
@@ -80,33 +83,72 @@ func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
 		panic("fss.newFileTreeFS: " + e.Error())
 	}
 	fmt.Printf("fss.newFileTreeFS: got %d nords \n", len(pFTFS.asSlice))
+
 	// SECOND PASS
 	// Go down slice to identify parent nords and link together.
-	for _, n := range pFTFS.asSlice {
+	for i, n := range pFTFS.asSlice {
+		if i == 0 {
+			continue
+		}
 		// Is child of root ?
-		if !S.Contains(n.Path, FU.PathSep) {
-			pFTFS.root.AddKid(n)
+		if !S.Contains(n.Path(), FU.PathSep) {
+			pFTFS.rootNord.AddKid(n)
+			// ON.AddKid2(pFTFS.rootNord, n)
 		} else {
-			itsDir := FP.Dir(n.Path)
-			var par *ON.FileNord
+			itsDir := FP.Dir(n.Path())
+			// println(n.Path, "|cnex2|", itsDir)
+			var par *ON.Nord
 			var ok bool
 			if par, ok = pFTFS.asMap[itsDir]; !ok {
 				panic(n.Path)
 			}
+			if itsDir != par.Path() {
+				panic(itsDir + " != " + par.Path())
+			}
+
+			// ON.AddKid3(&(par.Nord), &(n.Nord))
 			par.AddKid(n)
+
+			// fmt.Printf("ftfs: ptrs? n<%T> par<%T> \n", n, par)
+			// fmt.Printf("ftfs: ptrs? n<%T> par<%T> \n", &(n.Nord), &(par.Nord))
+			/*
+				plk := par.LastKid()
+				plk2 := plk.(*ON.Nord)
+				if uintptr(unsafe.Pointer(n)) == uintptr(unsafe.Pointer(plk2)) {
+					println("EQUAL!!??")
+				}
+				plk = n.Parent()
+				plk2 = plk.(*ON.Nord)
+				if uintptr(unsafe.Pointer(par)) == uintptr(unsafe.Pointer(plk2)) {
+					println("EQUAL!!??")
+				}
+				if par.LastKid() == n {
+					fmt.Printf("**** OK LINK 1??? %p,%p \n", n, par.LastKid())
+				}
+				if par.LastKid() != n {
+					fmt.Printf("**** FAILED LINK 1??? %p,%p \n", n, par.LastKid())
+				}
+				if n.Parent() == par {
+					fmt.Printf("**** OK LINK 2??? %p,%p \n", par, n.Parent())
+				}
+				if n.Parent() != par {
+					fmt.Printf("**** FAILED LINK 2??? %p,%p \n", par, n.Parent())
+				}
+			*/
 		}
 	}
-
-	println("DUMP LIST")
-	for _, n := range pFTFS.asSlice {
-		println(n.LinePrefixString(), n.LineSummaryString())
-	}
-	println("DUMP MAP")
-	for k, v := range pFTFS.asMap {
-		fmt.Printf("%s\t:: %s %s \n", k, v.LinePrefixString(), v.LineSummaryString())
-	}
-	println("DUMP TREE")
-	pFTFS.root.PrintAll(os.Stdout)
+	/*
+		println("DUMP LIST")
+		for _, n := range pFTFS.asSlice {
+			println(n.LinePrefixString(), n.LineSummaryString())
+		}
+		println("DUMP MAP")
+		for k, v := range pFTFS.asMap {
+			fmt.Printf("%s\t:: %s %s \n", k, v.LinePrefixString(), v.LineSummaryString())
+		}
+	*/
+	println("=== TREE ===")
+	pFTFS.rootNord.PrintAll(os.Stdout)
 	return pFTFS
 }
 
@@ -115,17 +157,10 @@ func (p *FileTreeFS) Open(path string) (fs.File, error) {
 	return p.inputFS.Open(path)
 }
 
-/* type DirEntry interface {
-    IsDir() bool
-    Name()  string   // the final elm of the path (the base name)
-    Type()  FileMode // those FileMode bits ret'd by FileMode.Type()
-    Info() (FileInfo, error)
-} */
-
 func mustInitRoot() bool {
 	var needsInit, didDoInit bool
-	needsInit = (len(pFTFS.asSlice) == 0 && len(pFTFS.asMap) == 0) // && len(lastNodePerDirLevel) == 0)
-	didDoInit = (len(pFTFS.asSlice) > 0 && len(pFTFS.asMap) > 0)   // && len(lastNodePerDirLevel) > 0)
+	needsInit = (len(pFTFS.asSlice) == 0 && len(pFTFS.asMap) == 0)
+	didDoInit = (len(pFTFS.asSlice) > 0 && len(pFTFS.asMap) > 0)
 	if !(needsInit || didDoInit) {
 		panic("mustInitRoot: illegal state")
 	}
@@ -135,48 +170,29 @@ func mustInitRoot() bool {
 // wfnBuildFileTree is
 // type WalkDirFunc func(path string, d DirEntry, err error) error
 func wfnBuildFileTree(path string, d fs.DirEntry, err error) error {
-	var pN *ON.FileNord
+	var p *ON.Nord
 	// ROOT NODE ?
 	if mustInitRoot() {
-		pN = new(ON.FileNord)
-		pN.SetIsRoot(true)
-		pN.Path = ""
-		pN.AbsFilePath = FU.AbsFP(pFTFS.rootPath)
-		pFTFS.root = pN
-		pFTFS.asSlice = append(pFTFS.asSlice, pN)
-		pFTFS.asMap[path] = pN
-		// len is 0, but...
-		// ## lastNodePerDirLevel = append(lastNodePerDirLevel, pN)
-		// len is now 1
-		fmt.Printf("Root node FP: rel<%s> abs<%s> \n", path, pN.AbsFilePath)
-		return nil
-	}
-	// Filter out hidden and emacs backup
-	if S.HasPrefix(path, ".") || S.Contains(path, "/.") || S.HasSuffix(path, "~") {
-		// println("Path rejected:", path)
-		return nil
-	}
-	// ALLOCATE AND INIT Nord
-	pN = new(ON.FileNord)
-	pN.Path = path
-	pN.AbsFilePath = FU.AbsFP(FP.Join(pFTFS.rootPath, path))
-	pFTFS.asSlice = append(pFTFS.asSlice, pN)
-	pFTFS.asMap[path] = pN
-	// println("Path OK:", pN.AbsFilePath)
-
-	/*
-		// If Parent is Root
-		if 0 == nSlashes {
-			pFTFS.root.AddKid(pN) // (&pNode.Nord)
+		if path != "." {
+			println("wfnBuildFileTree: root path is not dot but instead:", path)
+		}
+		p = ON.NewRootNord(pFTFS.rootPath, nil) // ON.NordSummaryString)
+		pFTFS.rootNord = p
+		println("wfnBuildFileTree: root node abs.FP:", p.AbsFP())
+	} else {
+		// Filter out hidden (esp'ly .git) and emacs backup.
+		// Note that "/" is assumed, not os.Sep
+		if S.HasPrefix(path, ".") || S.Contains(path, "/.") ||
+			S.HasSuffix(path, "~") || S.Contains(path, "/.git/") {
+			if !S.Contains(path, "/.git/") {
+				println("Path rejected:", path)
+			}
 			return nil
 		}
-	*/
-	// Parent is not root, so will have to locate parent.
-
-	// Check length
-	// ## lenLNPDL := len(lastNodePerDirLevel)
-	// fmt.Printf("%d\n", lenLNPDL)
-	// Find Parent
-
-	return nil // FIXME
+		p = ON.NewNord(path)
+	}
+	pFTFS.asSlice = append(pFTFS.asSlice, p)
+	pFTFS.asMap[path] = p
+	// println("Path OK:", pN.AbsFilePath)
+	return nil
 }

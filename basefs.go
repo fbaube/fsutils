@@ -7,8 +7,9 @@ import (
 
 // baseFS is an abstract class, an incomplete class.
 type baseFS struct {
-	inputFS  fs.FS
-	rootPath string
+	inputFS   fs.FS
+	rootPath  string
+	namespace string
 	sync.Mutex
 	isLocked bool
 }

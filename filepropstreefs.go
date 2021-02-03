@@ -42,18 +42,6 @@ func (p *FilePropsTreeFS) Open(path string) (fs.File, error) {
 	return p.Open(path)
 }
 
-/*
-type DirEntry interface {
-    IsDir() bool
-    // Name returns the final element of the path (the base name).
-    Name() string
-    // Type returns a subset of the usual FileMode bits,
-    // those returned by FileMode.Type().
-    Type() FileMode
-    Info() (FileInfo, error)
-}
-*/
-
 // type wfnBuilwfnBuildFilePropsTreedPPtree func(path string, d DirEntry, err error) error
 func wfnBuildFilePropsTree(path string, d fs.DirEntry, err error) error {
 	var pNode *ON.FilePropsNord
