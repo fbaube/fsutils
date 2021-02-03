@@ -11,11 +11,7 @@ import (
 )
 
 type FilePropsTreeFS struct {
-	baseFS /*
-		inputFS  fs.FS
-		rootPath string
-		sync.Mutex
-		isLocked bool */
+	baseFS
 	root    *ON.FilePropsNord
 	asSlice []*ON.FilePropsNord
 	asMap   map[string]*ON.FilePropsNord // string is Rel.Path
@@ -26,7 +22,6 @@ type FilePropsTreeFS struct {
 var pFPTFS *FilePropsTreeFS
 
 func NewFilePropsTreeFS(path string, okayFilexts []string) *FilePropsTreeFS {
-
 	// var e error
 	pFPTFS = new(FilePropsTreeFS)
 	pFPTFS.asSlice = make([]*ON.FilePropsNord, 0)
