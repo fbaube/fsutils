@@ -5,8 +5,8 @@ import (
 	"sync"
 )
 
-// baseFS is an abstract class, an incomplete class.
-type baseFS struct {
+// BaseFS is an abstract class, an incomplete class.
+type BaseFS struct {
 	inputFS     fs.FS
 	rootAbsPath string
 	namespace   string
@@ -16,7 +16,7 @@ type baseFS struct {
 
 // Lock is func (*Mutex) Lock :: If the lock is already in use,
 // the calling goroutine blocks until the mutex is available.
-func (bfs *baseFS) Lock() (success bool) {
+func (bfs *BaseFS) Lock() (success bool) {
 	if bfs.isLocked {
 		return false
 	}
@@ -27,7 +27,7 @@ func (bfs *baseFS) Lock() (success bool) {
 
 // Unlock is func (*Mutex) Unlock :: It is a run-time error
 // if m is not locked on entry to Unlock.
-func (bfs *baseFS) Unlock() {
+func (bfs *BaseFS) Unlock() {
 	if !bfs.isLocked {
 		panic("Unlock failed: is not locked, would throw RTE")
 	}
@@ -36,4 +36,4 @@ func (bfs *baseFS) Unlock() {
 }
 
 // IsLocked is duh.
-func (bfs *baseFS) IsLocked() bool { return bfs.isLocked }
+func (bfs *BaseFS) IsLocked() bool { return bfs.isLocked }

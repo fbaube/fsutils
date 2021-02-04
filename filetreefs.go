@@ -15,7 +15,7 @@ func init() {
 */
 
 type FileTreeFS struct {
-	baseFS
+	BaseFS
 	rootNord *ON.Nord
 	asSlice  []*ON.Nord
 	asMap    map[string]*ON.Nord // string is Rel.Path

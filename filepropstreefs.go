@@ -11,7 +11,7 @@ import (
 )
 
 type FilePropsTreeFS struct {
-	baseFS
+	BaseFS
 	rootNord *ON.FilePropsNord
 	asSlice  []*ON.FilePropsNord
 	asMap    map[string]*ON.FilePropsNord // string is Rel.Path
