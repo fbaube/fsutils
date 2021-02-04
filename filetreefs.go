@@ -26,7 +26,7 @@ func (p *FileTreeFS) Open(path string) (fs.File, error) {
 	return p.inputFS.Open(path)
 }
 
-func mustInitRoot() bool {
+func mustInitFtfsRoot() bool {
 	var needsInit, didDoInit bool
 	needsInit = (len(pFTFS.asSlice) == 0 && len(pFTFS.asMap) == 0)
 	didDoInit = (len(pFTFS.asSlice) > 0 && len(pFTFS.asMap) > 0)
@@ -41,11 +41,11 @@ func mustInitRoot() bool {
 func wfnBuildFileTree(path string, d fs.DirEntry, err error) error {
 	var p *ON.Nord
 	// ROOT NODE ?
-	if mustInitRoot() {
+	if mustInitFtfsRoot() {
 		if path != "." {
 			println("wfnBuildFileTree: root path is not dot but instead:", path)
 		}
-		p = ON.NewRootNord(pFTFS.rootPath, nil) // ON.NordSummaryString)
+		p = ON.NewRootNord(pFTFS.rootAbsPath, nil) // ON.NordSummaryString)
 		pFTFS.rootNord = p
 		println("wfnBuildFileTree: root node abs.FP:", p.AbsFP())
 	} else {

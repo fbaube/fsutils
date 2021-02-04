@@ -26,9 +26,9 @@ var pFTFS *FileTreeFS
 func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
 	pFTFS = new(FileTreeFS)
 	// Initialize embedded baseFS
-	pFTFS.baseFS.rootPath = path
+	pFTFS.baseFS.rootAbsPath = path
 	pFTFS.baseFS.inputFS = os.DirFS(path)
-	println("fss.newFileTreeFS:", pFTFS.baseFS.rootPath)
+	println("fss.newFileTreeFS:", pFTFS.baseFS.rootAbsPath)
 	// Initialize slice & map
 	pFTFS.asSlice = make([]*ON.Nord, 0)
 	pFTFS.asMap = make(map[string]*ON.Nord)

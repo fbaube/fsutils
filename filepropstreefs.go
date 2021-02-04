@@ -12,9 +12,9 @@ import (
 
 type FilePropsTreeFS struct {
 	baseFS
-	root    *ON.FilePropsNord
-	asSlice []*ON.FilePropsNord
-	asMap   map[string]*ON.FilePropsNord // string is Rel.Path
+	rootNord *ON.FilePropsNord
+	asSlice  []*ON.FilePropsNord
+	asMap    map[string]*ON.FilePropsNord // string is Rel.Path
 }
 
 // var ptNEXSEQ int
@@ -25,9 +25,9 @@ func NewFilePropsTreeFS(path string, okayFilexts []string) *FilePropsTreeFS {
 	// var e error
 	pFPTFS = new(FilePropsTreeFS)
 	pFPTFS.asSlice = make([]*ON.FilePropsNord, 0)
-	pFPTFS.rootPath = path
-	fmt.Println("on.newFilePropsTreeFS.cwd:", pFPTFS.rootPath)
-	pFPTFS.inputFS = os.DirFS(pFPTFS.rootPath)
+	pFPTFS.rootAbsPath = path
+	fmt.Println("on.newFilePropsTreeFS.cwd:", pFPTFS.rootAbsPath)
+	pFPTFS.inputFS = os.DirFS(pFPTFS.rootAbsPath)
 	// func WalkDir(fsys FS, root string, wfn WalkDirFunc) error
 	fs.WalkDir(pFPTFS.inputFS, ".", wfnBuildFilePropsTree)
 	return pFPTFS
@@ -57,18 +57,18 @@ func wfnBuildFilePropsTree(path string, d fs.DirEntry, err error) error {
 	pNode.PathProps = *pPP
 	// ROOT ?
 	if path == "." {
-		if pFPTFS.root != nil {
+		if pFPTFS.rootNord != nil {
 			panic("pFPTFS.root not nil")
 		}
-		pFPTFS.root = pNode
+		pFPTFS.rootNord = pNode
 		return nil
 	}
-	if pFPTFS.root == nil {
+	if pFPTFS.rootNord == nil {
 		panic("pFPTFS.root is nil")
 	}
 	// If Parent is Root
 	if !S.Contains(path, "/") {
-		pFPTFS.root.AddKid(&pNode.Nord)
+		pFPTFS.rootNord.AddKid(&pNode.Nord)
 		return nil
 	}
 	// Find Parent

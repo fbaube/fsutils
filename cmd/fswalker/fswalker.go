@@ -27,10 +27,6 @@ func ReadContentity(fsys fs.FS, path string) (interface{}, error) {
 	return nil, fmt.Errorf("read-contentity %s: operation not supported", path)
 }
 
-// DirFS returns an fs.FS implementation that
-// presents the files in the subtree rooted at dir.
-// func DirFS(dir string) fs.FS
-
 var theFS fs.FS
 
 func main() {
@@ -41,17 +37,5 @@ func main() {
 	}
 	cwd, _ = os.Getwd()
 	fmt.Println("CWD:", cwd)
-	// cfs = os.DirFS(cwd)
-	// theFS = fss.NewFilePropsTreeFS(cwd, nil)
 	theFS = fss.NewFileTreeFS(cwd, nil)
-	// func WalkDir(fsys FS, root string, fn WalkDirFunc) error
-	// fs.WalkDir(cfs, ".", myWalkFn)
 }
-
-/*
-// type WalkDirFunc func(path string, d DirEntry, err error) error
-func myWalkFn(path string, d fs.DirEntry, err error) error {
-	fmt.Println("Walking:", path)
-	return nil
-}
-*/
