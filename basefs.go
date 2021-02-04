@@ -2,6 +2,7 @@ package fss
 
 import (
 	"io/fs"
+	"os"
 	"sync"
 )
 
@@ -12,6 +13,21 @@ type BaseFS struct {
 	namespace   string
 	sync.Mutex
 	isLocked bool
+}
+
+func NewBaseFS(path string) *BaseFS {
+	p := new(BaseFS)
+	p.rootAbsPath = path
+	p.inputFS = os.DirFS(path)
+	return p
+}
+
+func (p *BaseFS) InputFS() fs.FS {
+	return p.inputFS
+}
+
+func (p *BaseFS) RootAbsPath() string {
+	return p.rootAbsPath
 }
 
 // Lock is func (*Mutex) Lock :: If the lock is already in use,
