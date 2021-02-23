@@ -99,7 +99,7 @@ func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
 			fmt.Printf("%s\t:: %s %s \n", k, v.LinePrefixString(), v.LineSummaryString())
 		}
 	*/
-	println("=== TREE ===")
-	pFTFS.rootNord.PrintAll(os.Stdout)
+	// println("=== FileTreeFS TREE ===")
+	// pFTFS.rootNord.PrintAll(os.Stdout)
 	return pFTFS
 }
