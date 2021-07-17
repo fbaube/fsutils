@@ -1,4 +1,4 @@
-package fss
+package fsutils
 
 import (
 	"fmt"

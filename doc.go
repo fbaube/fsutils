@@ -33,4 +33,4 @@ lots more. So if you write your own FS implementation, one good test you
 should write is a test that constructs an instance of the new FS and then
 passes it to fstest.TestFS for inspection.
 */
-package fss
+package fsutils
