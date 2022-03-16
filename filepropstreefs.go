@@ -41,6 +41,7 @@ func (p *FilePropsTreeFS) Open(path string) (fs.File, error) {
 func wfnBuildFilePropsTree(path string, d fs.DirEntry, err error) error {
 	var pNode *ON.FilePropsNord
 	var pPP *FU.PathProps
+	var e error 
 	// Filter out non-content
 	if S.HasPrefix(path, ".") {
 		return nil
@@ -53,7 +54,10 @@ func wfnBuildFilePropsTree(path string, d fs.DirEntry, err error) error {
 	pNode = new(ON.FilePropsNord)
 	// func NewPathProps(rfp string) *PathProps {
 	fmt.Printf("\t")
-	pPP = FU.NewPathProps(path)
+	pPP, e = FU.NewPathProps(path)
+	if e != nil {
+		FU.WrapAsPathPropsError(e, "wfnBuildFilePropsTree.L60", pPP)
+	}
 	pNode.PathProps = *pPP
 	// ROOT ?
 	if path == "." {
