@@ -49,10 +49,15 @@ func wfnBuildFileTree(path string, d fs.DirEntry, err error) error {
 		pFTFS.rootNord = p
 		println("wfnBuildFileTree: root node abs.FP:", p.AbsFP())
 	} else {
-		// Filter out hidden (esp'ly .git) and emacs backup.
+		// Filter out several file types:
+		// - hidden (esp'ly .git dirctory)
+		// - emacs backup
+		// - this app's debug files: *_(echo,tkns,tre)
 		// Note that "/" is assumed, not os.Sep
 		if S.HasPrefix(path, ".") || S.Contains(path, "/.") ||
-			S.HasSuffix(path, "~") || S.Contains(path, "/.git/") {
+			S.HasSuffix(path, "~") || S.Contains(path, "/.git/") ||
+			(len(path) >= 5 && path[len(path)-5] == '_') {
+			// Don't print TOO much!
 			if !S.Contains(path, "/.git/") {
 				println("Path rejected:", path)
 			}
