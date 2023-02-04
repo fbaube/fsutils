@@ -1,10 +1,10 @@
 package fsutils
 
 import (
-	"io/fs"
-	S "strings"
-
 	ON "github.com/fbaube/orderednodes"
+	"io/fs"
+	FP "path/filepath"
+	S "strings"
 )
 
 /*
@@ -31,32 +31,41 @@ func mustInitFtfsRoot() bool {
 	needsInit = (len(pFTFS.asSlice) == 0 && len(pFTFS.asMap) == 0)
 	didDoInit = (len(pFTFS.asSlice) > 0 && len(pFTFS.asMap) > 0)
 	if !(needsInit || didDoInit) {
-		panic("mustInitRoot: illegal state")
+		panic("mustInitFtfsRoot: illegal state")
 	}
 	return needsInit
 }
 
 // wfnBuildFileTree is
 // type WalkDirFunc func(path string, d DirEntry, err error) error
+//
+// It filters out several file types:
+// - (TODO:) zero-length file (no content to analyse)
+// - hidden (esp'ly .git directory)
+// - emacs backup (myfile~)
+// - this app's debug files: *_(echo,tkns,tre)
+// - filenames without dot
+// .
 func wfnBuildFileTree(path string, d fs.DirEntry, err error) error {
 	var p *ON.Nord
 	// ROOT NODE ?
 	if mustInitFtfsRoot() {
 		if path != "." {
-			println("wfnBuildFileTree: root path is not dot but instead:", path)
+			println("wfnBuildFileTree:",
+				"root path is not dot but instead:", path)
 		}
 		p = ON.NewRootNord(pFTFS.rootAbsPath, nil) // ON.NordSummaryString)
 		pFTFS.rootNord = p
 		println("wfnBuildFileTree: root node abs.FP:", p.AbsFP())
 	} else {
-		// Filter out several file types:
-		// - hidden (esp'ly .git dirctory)
-		// - emacs backup
-		// - this app's debug files: *_(echo,tkns,tre)
-		// Note that "/" is assumed, not os.Sep
-		if S.HasPrefix(path, ".") || S.Contains(path, "/.") ||
-			S.HasSuffix(path, "~") || S.Contains(path, "/.git/") ||
-			(len(path) >= 5 && path[len(path)-5] == '_') {
+		// Filter out some file types as described in the func commment
+		if S.HasPrefix(path, ".") || // hidden
+			S.Contains(path, "/.") || // hidden
+			S.HasSuffix(path, "~") || // emacs backup
+			S.Contains(path, "/.git/") || // git repo
+			(len(path) >= 5 && // debug file via "-t" flag
+				path[len(path)-5] == '_') ||
+			S.Index(FP.Base(path), ".") == -1 { // untyped file
 			// Don't print TOO much!
 			if !S.Contains(path, "/.git/") {
 				println("Path rejected:", path)

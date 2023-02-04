@@ -20,6 +20,7 @@ func init() {
 
 // ## var lastNodePerDirLevel []*ON.FileNord
 
+// pFTFS is a singleton and NOT RE-ENTRANT!
 var pFTFS *FileTreeFS
 
 // NewFileTreeFS is duh.
@@ -35,6 +36,7 @@ func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
 
 	// FIRST PASS
 	// Load slice & map
+	// Skip dodgy filenames
 	e := fs.WalkDir(pFTFS.inputFS, ".", wfnBuildFileTree)
 	if e != nil {
 		panic("fss.newFileTreeFS: " + e.Error())
@@ -43,6 +45,7 @@ func NewFileTreeFS(path string, okayFilexts []string) *FileTreeFS {
 
 	// SECOND PASS
 	// Go down slice to identify parent nords and link together.
+	println("WARN'G: drop ZERO-LENGTHs! utils/fsutils/filetreefsnew.go L48")
 	for i, n := range pFTFS.asSlice {
 		if i == 0 {
 			continue
