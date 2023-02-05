@@ -5,19 +5,19 @@ The Go library allows for more complex behavior by providing other file-
 system interfaces that can be composed on top of the base fs.FS interface,
 such as ReadDirFS, which allows you to list the contents of a directory:
 
-type ReadDirFS interface {
-    FS
-    ReadDir(name string) ([]DirEntry, error)
-}
+	type ReadDirFS interface {
+	    FS
+	    ReadDir(name string) ([]DirEntry, error)
+	}
 
 The FS.Open function returns the new fs.File “ReadStatCloser” interface type,
 which gives you access to some common file functions:
 
-type File interface {
-    Stat() (FileInfo, error)
-    Read([]byte) (int, error)
-    Close() error
-}
+	type File interface {
+	    Stat() (FileInfo, error)
+	    Read([]byte) (int, error)
+	    Close() error
+	}
 
 However, one big caveat: conspicuously absent from the fs.File interface is
 any ability to write files. The fs package is a R/O interface for filesystems.

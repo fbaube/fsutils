@@ -7,13 +7,6 @@ import (
 	S "strings"
 )
 
-/*
-var SF ON.StringFunc
-func init() {
-	SF = ON.NordSummaryString
-}
-*/
-
 type FileTreeFS struct {
 	BaseFS
 	rootNord *ON.Nord
