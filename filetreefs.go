@@ -21,7 +21,9 @@ type FileTreeFS struct {
 	asMap    map[string]*ON.Nord // string is Rel.Path
 }
 
-// Open is a dummy function, just here to satisfy an interface.
+// Open is a pass-thru dummy function,
+// just here to satisfy an interface.
+// .
 func (p *FileTreeFS) Open(path string) (fs.File, error) {
 	return p.inputFS.Open(path)
 }
@@ -42,9 +44,9 @@ func mustInitFtfsRoot() bool {
 // It filters out several file types:
 // - (TODO:) zero-length file (no content to analyse)
 // - hidden (esp'ly .git directory)
-// - emacs backup (myfile~)
-// - this app's debug files: *_(echo,tkns,tre)
-// - filenames without dot
+// - emacs backup ("myfile~")
+// - this app's debug files: "*_(echo,tkns,tree)"
+// - filenames without a dot (indicating no file extension)
 // .
 func wfnBuildFileTree(path string, d fs.DirEntry, err error) error {
 	var p *ON.Nord
