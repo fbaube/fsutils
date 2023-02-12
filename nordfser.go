@@ -21,7 +21,6 @@ import (
 // Open (the only method specified in the fs.FS interface) returns the tag's
 // body (from opening tag to closing tag, inclusive) of that tag only, without
 // the context of the larger tag tree.
-//
 type NordFSer interface {
 	// Interface fs.FS is the minimum required of an fs file system.
 	// The Open(path) method is its only method. Iy opens the named
@@ -55,11 +54,10 @@ type NordFSer interface {
 //
 // Note that fs.File is an interface that providess just three methods:
 // Stat() (FileInfo, error) ; Read([]byte) (int, error) ; Close() error
-//
 type FileNordFSer interface {
 	NordFSer
 	// InputFS is undefined for a TagTree.
-	InputFS() *fs.FS
+	InputFS() fs.FS
 	// DirCount returns zero if the FS is a TagTree.
 	DirCount() int
 	// FileCount returns zero if the FS is a TagTree.
