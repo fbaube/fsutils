@@ -3,22 +3,20 @@ module github.com/fbaube/fsutils
 go 1.16
 
 require (
-	github.com/fatih/color v1.13.0 // indirect
-	github.com/fbaube/fileutils v0.0.0-20220316150555-2641c6898ad3
+	github.com/fatih/color v1.15.0 // indirect
+	github.com/fbaube/ctoken v0.0.0-20230518060940-6f364ff08c9d // indirect
+	github.com/fbaube/fileutils v0.0.0-20230621193644-4cfce70bece3 // indirect
 	github.com/fbaube/fss v0.0.0-20210223182609-1488f8beafdf
-	github.com/fbaube/mlog v0.0.0-20220316141112-7df630bb6eaa // indirect
-	github.com/fbaube/orderednodes v0.0.0-20210716200457-1666e0faf4b3
-	github.com/fbaube/stringutils v0.0.0-20210716195613-2633ae132b43 // indirect
-	github.com/fbaube/wasmutils v0.0.0-20220215193725-d00235045d64 // indirect
-	github.com/fbaube/xmlutils v0.0.0-20220313145621-ef15b7335b7a // indirect
-	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
-	github.com/go-git/go-git v4.7.0+incompatible // indirect
-	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/fbaube/logutils v0.0.0-20230607184837-dc04e193943f // indirect
+	github.com/fbaube/miscutils v0.0.0-20230402173202-ac4340addc77 // indirect
+	github.com/fbaube/mlog v0.0.0-20230205182808-c77321da3ff3 // indirect
+	github.com/fbaube/orderednodes v0.0.0-20230205184841-94778d738f0f
+	github.com/fbaube/stringutils v0.0.0-20230612185027-a01a68c97d21 // indirect
+	github.com/fbaube/wasmutils v0.0.0-20230206184435-0359d2530836 // indirect
+	github.com/fbaube/xmlutils v0.0.0-20230518061403-2465e549e10a // indirect
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mgutz/str v1.2.0 // indirect
-	github.com/src-d/gcfg v1.4.0 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86 // indirect
-	golang.org/x/tools v0.1.10 // indirect
-	gopkg.in/warnings.v0 v0.1.2 // indirect
+	golang.org/x/tools v0.10.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
