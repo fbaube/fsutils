@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/fbaube/fss"
+	"github.com/fbaube/fsutils"
 	ON "github.com/fbaube/orderednodes"
 )
 
