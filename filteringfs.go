@@ -7,7 +7,7 @@ package fsutils
 import(
 	"io/fs"
 	FP "path/filepath"
-}
+)
 
 type FilteringFS struct {
     fs fs.FS
