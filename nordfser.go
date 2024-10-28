@@ -32,7 +32,7 @@ import (
 // - Note, all fs.FS paths are "unrooted" so there is
 //   still a fundamental difference with os.Open, etc.
 // - DirFS is unrooted and does not allow access outside
-/    of the initial directory.
+//    of the initial directory.
 // - Note that io/fs.FS.Open supports only unrooted paths.
 // - fs.ValidPath rejects rooted paths. 
 // - os.Open handles either a rooted path or a cwd path.
