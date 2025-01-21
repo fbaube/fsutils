@@ -9,11 +9,13 @@ import(
 	FP "path/filepath"
 )
 
+// FilteringFS can do whatever we want, for example hide subdirectories.
+// In some cases tho this can now be replaced by the new (1.24)
+// [os.Root] https://pkg.go.dev/os@master#Root .
 type FilteringFS struct {
     fs fs.FS
 }
-// And make the wrapper into an fs.FS by implementing its
-// interface.
+// And make the wrapper into an fs.FS by implementing its interface.
 func (wrapper FilteringFS) Open(name string) (fs.File, error) {
     f, err := wrapper.fs.Open(name)
     if err != nil {

@@ -22,17 +22,17 @@ import (
 //      Close() error }
 // These are a small subset of methods on os.File.
 // The above-er list adds FS's ReadFile & ReadDir.
-// Pkg os has os.ReadFile, and os.File has methods ReadDir & Readdir .
-// Oddly, func os.DirFS(dir string) fs.FS
-// returns an fs.FS, and "the result implements
-// io/fs.StatFS, io/fs.ReadFileFS and io/fs.ReadDirFS",
-// but does it accept rel.paths yet also reject a leading "." ? 
+// Package os has os.ReadFile, and os.File has methods ReadDir & Readdir .
+// Oddly, func os.DirFS(dir string) fs.FS returns an
+// fs.FS, and "the result implements io/fs.StatFS,
+// io/fs.ReadFileFS and io/fs.ReadDirFS", but does 
+// it accept rel.paths yet also reject a leading "." ? 
 
 // https://github.com/golang/go/issues/47803
 // - Note, all fs.FS paths are "unrooted" so there is
 //   still a fundamental difference with os.Open, etc.
 // - DirFS is unrooted and does not allow access outside
-//    of the initial directory.
+//   of the initial directory (but: [os.Root]).
 // - Note that io/fs.FS.Open supports only unrooted paths.
 // - fs.ValidPath rejects rooted paths. 
 // - os.Open handles either a rooted path or a cwd path.
