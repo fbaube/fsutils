@@ -1,0 +1,349 @@
+package fsutils
+
+// TODO: Convert Contentity to FSItem
+
+import (
+	"io/fs"
+	"os"
+	"fmt"
+	"errors"
+	FP "path/filepath"
+	S "strings"
+
+	FU "github.com/fbaube/fileutils"
+	SU "github.com/fbaube/stringutils"
+	L "github.com/fbaube/mlog"
+
+	CT "github.com/fbaube/ctoken"
+)
+
+// NewMemFileTree proceeds as follows:
+//  1. Walk the os.Root's FS to gather a slice of simple strings of filepaths
+//  2. Use that slice to build a slice of (ptrs to) not fileutils/FSItems's but
+//     rather FileTreeNodes 
+//  3. Use the information gathered, plus input arguments, to filter out entries
+//  4. (Optional) Provide user interactivity for filtering out additional entries
+//  5. (If needed) Compress the slice, by removing nil entries
+//  6. Provide the hierarchical/tree structure, by "weaving" the slice together
+//     (i.e. linking parents and children, probably using more than one method 
+//     as implemented by orderednodes/Nord), and provide other means of access,
+//     such as a map from filepaths
+//
+// Maybe the path argument should be an absolute filepath, 
+// because a relative filepath might cause problems. Altho
+// this is the opposite of the advice for lower-level items.
+//
+// It isn't yet clear precisely how to use [os.Root]. Note tho that when
+// we used [os.DirFS], it appeared to make no difference whether path 
+//  - is relative or absolute
+//  - ends with a trailing slash or not
+//  - is a directory or a symlink to a directory
+//
+// The only error returns for this func are:
+//  - a bad path, rejected by func FU.NewFilepaths
+//  - the path is not a directory (altho it can be
+//    a symlnk to a directory ?)
+//  - TBD: WHat happens of [os.Root] barfs on something ? 
+// MemFileTree does not embed Errer and cannot
+// itself return an error. FIXME: change this ? 
+//
+// TODO: Maybe it needs two boolean arguments:
+//  - One to say whether to be strict about security (using [os.Root]
+//    and Valid/Local, and
+//  - One to say whether to follow symlinks.
+// These two flags might have some interesting interactions.
+// OTOH since this func can (and does?) use [os.Root], it can 
+// easily (and should probably) also default to higher security 
+// using funcs [io/fs.ValidPath] and [path/filepath.IsLocal].
+//
+// Accumulated NewContentity errors are counted
+// in the field CotentityFS.nErrors 
+// .
+func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
+     	var CntyFS *MemFileTree
+     	var Empty  *MemFileTree
+	var e error 
+	var pFPs *FU.Filepaths
+	Empty = new(MemFileTree) 
+
+	// --------------------
+	//  Prepare filepath(s)
+	// --------------------
+	L.L.Info("Making NewMemFileTree: " + aPath)
+	pFPs, e = FU.NewFilepaths(aPath)
+	if e != nil {
+	     	L.L.Error("NewCntyFS: bad path: %s", aPath)
+		ee := &fs.PathError { Path:aPath, Err:e,
+		       Op:"newcntyfs: bad root path" }
+		// Empty.SetError(ee) 
+		return Empty, ee
+	}
+	pathToUse := FU.EnsureTrailingPathSep(aPath)
+	// os.DirFS(..) does not check or report problems
+	// with the path argument, so we DIY here 
+	if !FU.IsDirAndExists(pathToUse) {
+		L.L.Error("NewCntyFS: Not a directory: %s", aPath)
+		ee := &fs.PathError { Path:aPath, Err:errors.New(
+		       "not a valid directory"), Op:"newcntyfs.root" }
+		// Empty.SetError(ee)
+		return Empty, ee
+	}
+	CntyFS = new(MemFileTree)
+	// 2025.01 Change from path to AbsFP
+	CntyFS.RootAbsPath = pFPs.AbsFP // path 
+	L.L.Info("Path for new os.DirFS: " + SU.Tildotted(aPath))
+	
+	var osRoot *os.Root 
+	osRoot, e = os.OpenRoot(pathToUse)
+	CntyFS.FS = osRoot.FS()
+	println("contentityfs_new L87 FIXED? os.Root")
+	// CntyFS.FS = os.DirFS(pathToUse)
+	
+	// Initialize slice & map. Their length 
+	// 0 will be detected by func [mustInit]
+	CntyFS.AsSlice = make([]*FileTreeNode, 0)
+	CntyFS.AsMapOfAbsFP = make(map[string]*FileTreeNode)
+
+	// ==================
+	//    FIRST PASS
+	//  Load slice & map
+	// ==================
+	// NOTE that rel.path "." seems to be necessary 
+	// here or else really weird errors occur.
+	// Note that this is the place where [CntyFS]
+	// being a global singleton can cause problems.
+// ======================================================================
+//	e = fs.WalkDir(CntyFS.FS, ".", wfnBuildContentityTree)
+//
+// wfnBuildContentityTree is a [fs.WalkDirFunc]
+// 
+// Altho it returns [*fs.PathError], this has to be declared as error
+// because of the problems of an interface that is both nil and not nil.
+//
+// The basic procedure of the func is is:
+//  - handle an error passed in 
+//  - check validity of path argument (and reject if it is a file)
+//  - handle first time thru (i.e. root node) 
+//  - filter out unwanted values (and if unwanted dir, return [fs.SkipDir])
+//  - add to slice - and also map - whether dir or file
+//  - use materialised paths in slice to form links to build a tree 
+//
+// FIXME: Note that symlinks might not be handled securely, 
+// not until [os.Root] is used. And even then, they might
+// not be handled correctly. 
+//
+// This func filters out several file types:
+//  - hidden (esp'ly .git directory)
+//  - leading underbars ("_")
+//  - emacs backup ("myfile~")
+//  - this app's info  files: "*gtk,*gtr"
+//  - this app's debug files: "*_(echo,tkns,tree)"
+//  - filenames without a dot (indicating no file extension)
+//  - NOTE that zero-length files (no content to analyse)
+//    should NOT be filtered out 
+//
+// Note that as path separator, "/" is usually assumed, not [os.PathSep]. 
+// .
+// wfnBuildContentityTree(inPath string, inDE fs.DirEntry, inErr error) error {
+// ======================================================================
+e = fs.WalkDir(CntyFS.FS, ".",
+func(inPath string, inDE fs.DirEntry, inErr error) error { // fs.WalkDirFunc
+	// --------------------------
+	//  Were we passed an error?
+	// --------------------------
+	if inErr != nil {
+	   	 return CntyFS.handleWalkerErrorArgument(inPath, &inDE, inErr)
+	}
+	// --------------------
+	//  Set some variables 
+	// --------------------
+	var isFirst = CntyFS.mustInitRoot() // first call ?
+        var inName  = inDE.Name()
+	var inDEisDir = inDE.IsDir()
+	// If it's a directory, make sure it has a trailing slash.
+	if inDEisDir {
+	   inPath = FU.EnsureTrailingPathSep(inPath)
+	   inName = FU.EnsureTrailingPathSep(inName)
+	}
+	// func [filepath.Abs] fails here cos it needs more than just 
+	// a Base file name cos it does only lexical processing. 
+	// absfp,_ = FP.Abs(path)
+
+	// var p *FileTreeNode
+	var e error 
+	// ==================
+	//  HANDLE ROOT NODE 
+	// (without filtering)
+	// ==================
+	if isFirst {
+		L.L.Info("CntyFSWalker: inPath: " + inPath)
+	   	if !inDEisDir { return &fs.PathError { Path:inPath,
+		   	Op:"cntyfswalker.root", Err:errors.New("not a dir") } }
+		L.L.Debug("cntyfswalker.root: path: %s / %s", inName, inPath)
+		L.L.Debug("cntyfswalker.root: dirEntry: %+v", inDE)
+	   	e = CntyFS.doInitRoot()
+		if e == nil { return nil }
+		return &fs.PathError { Err:e, Path:inPath,
+		       Op:"newrootcnty.doinitroot" }
+	}
+	// ---------------------------
+	//  Filter out unwanted stuff 
+	// ---------------------------
+	bad, rsn := excludeFilenamepath(inPath)
+	if bad {
+		L.L.Debug("Rejecting (%s): %s", inPath, rsn)
+		if inDEisDir { return fs.SkipDir } 
+		return nil
+	}
+	// -----------------------------------------------
+	//  Now at this point, even if it's a directory,
+	//  it's OK ! So let's go ahead and form the path
+	//  of the file-or-dir and make the FileTreeNode
+	// -----------------------------------------------
+	absPathToUse := FU.EnsureTrailingPathSep(
+		        FP.Join(CntyFS.RootAbsPath(), inPath))
+	var pCty *FileTreeNode
+	pCty = NewFileTreeNode(absPathToUse)
+	if pCty.HasError() { 
+		L.L.Warning("Rejecting (new FileTreeNode(%s) failed): %T %+v",
+			absPathToUse, e, e)
+		CntyFS.nErrors++
+		return nil
+	}
+	// ================================
+	//  Now we do things based on just 
+	//  what exactly the input DirEntry
+	//  (inDE) is - file, dir, wotevs.
+	// ================================
+	// This is where bugs appeared when it's a directory,
+	// cos calling code was assuming a valid FileTreeNode.
+	// TODO: Not sure what happens with symlinks
+	if inDEisDir {
+	   	if pCty.Fsi.TypedRaw == nil {
+		   pCty.Fsi.TypedRaw = new(CT.TypedRaw)
+		   } 
+	        pCty.Fsi.TypedRaw.Raw_type = SU.Raw_type_DIRLIKE
+		CntyFS.nDirs++ // just a simple counter
+		// println("================ DIR ========")
+		// These next two stmts should barf, cos
+		// they should not be allocated for a dir !
+		// p.MimeType = "dir"
+		// p.MType = SU.MU_type_DIRLIKE
+		L.L.Okay("Item (DIR/) OK; no MmeType or MType") 
+	} else if inDE.Type() == 0 { // regular file
+		CntyFS.nFiles++ // just a simple counter 
+		L.L.Okay("Item (FILE) OK: MType<%s> MarkupType<%s>",
+			pCty.MType, pCty.RawType())
+	} else if (inDE.Type() & fs.ModeSymlink) != 0 { // Symlink
+	       	if pCty.Fsi.TypedRaw == nil {
+		   pCty.Fsi.TypedRaw = new(CT.TypedRaw)
+		}
+	        pCty.Fsi.TypedRaw.Raw_type = SU.Raw_type_DIRLIKE // OOPS
+		CntyFS.nMiscs++ // just a simple counter 
+		L.L.Okay("Item (SYML) OK: what to do ?!")
+	} else { // Some weirdness in the Mode bits 
+	        pCty.Fsi.TypedRaw.Raw_type = SU.Raw_type_DIRLIKE
+             // CntyFS.nMiscs++ // just a simple counter
+		CntyFS.nErrors++
+                L.L.Error("Item (WTF) BAD: what to do ?!")
+	}
+	// -------------------------
+	//   Also add it to the
+	//  arena-slice and the map
+	// -------------------------
+	CntyFS.AsSlice = append(CntyFS.AsSlice, pCty)
+	CntyFS.AsMapOfAbsFP[absPathToUse] = pCty
+	// L.L.Info("ADDED TO MAP L241: " + pathToUse)
+	return nil
+})
+// ======================================================================
+	if e != nil {
+		// L.L.Panic("NewCntyFS.WalkDir: " + e.Error())
+		return nil, &fs.PathError { Op:"newcntyfs.walkdir",
+		       Err:e, Path:aPath } 
+	}
+	L.L.Okay("NewCntyFS: walked OK %d nords from path %s",
+		 len(CntyFS.AsSlice), pathToUse)
+
+	// Debuggery 
+	for ii, cc := range CntyFS.AsSlice {
+	    if cc == nil {
+	       L.L.Error ("OOPS, CntyFS.asSlice[%02d] is NIL", ii)
+	       continue
+	    }
+	    /* if cc.FSItem == nil || cc.FSItem.FileMeta == nil {
+	       L.L.Error("WTF, man!")
+	       continue } */
+	    if cc.Fsi.IsDirlike() {
+	        L.L.Debug("[%02d] isDIRLIKE: AbsFP: %s",
+			ii, cc.Fsi.FPs.AbsFP)
+	    } else {
+		L.L.Debug("[%02d] MarkupType: %s", ii, cc.RawType())
+	    }
+	}
+
+	// ==============================================
+	//      SECOND PASS
+	//  Range over the slice, using the materialised
+	//  paths in asMapToAbsFS to identify parent/kid 
+	//  Nord relationships and link together
+	// ==============================================
+	// TODO This needs to be in some generalized 
+	// form, such as TreeFromMaterializedPaths
+	// =========================================
+	var i int
+	var pC *FileTreeNode
+	for i, pC = range CntyFS.AsSlice {
+		if i == 0 { // skip over root 
+			continue
+		}
+		// ---------------------------
+		//  Shortcut if child of root
+		// ---------------------------
+		if !S.Contains(pC.RelFP(), FU.PathSep) {
+			CntyFS.Root.AddKid(pC)
+			continue
+		}
+		// --------------------------
+		//   Get dir portion of path
+		// --------------------------
+		itsDir := FP.Dir(pC.RelFP())
+		itsDir = FU.EnsureTrailingPathSep(itsDir)
+		// println(n.Path, "|cnex2|", itsDir)
+		// L.L.Warning("itsDir: " + itsDir)
+		// L.L.Warning("theMap: %+v", CntyFS.asMap)
+		var pPar *FileTreeNode
+		var ok bool
+		// PROBLEMS HERE ?
+		// The parent directory should be in the map.
+		// If it's not, then possibly we have messed
+		// up with trailing separators. 
+		if pPar, ok = CntyFS.AsMapOfAbsFP[itsDir]; !ok {
+			L.L.Error("findParentInMap: failed for: " +
+				itsDir + " of " + pC.AbsFP())
+			println(fmt.Sprintf("%+v", CntyFS.AsMapOfAbsFP))
+			panic(pC.AbsFP())
+		}
+		/*
+		if itsDir != par.AbsFP() { // or, Rel? 
+			panic(itsDir + " != " + par.AbsFP())
+		}
+		*/
+		pPar.AddKid(pC)
+	}
+	// TODO Look for entries that do not have a parent assigned !
+	
+	/* more debugging
+	println("DUMP LIST")
+	for _, n := range pFTFS.AsSlice {
+		println(n.LinePrefixString(), n.LineSummaryString())
+	}
+	println("DUMP MAP")
+	for k, v := range pFTFS.AsMap {
+		fmt.Printf("%s\t:: %s %s \n", k, v.LinePrefixString(), v.LineSummaryString())
+	}
+	*/
+	// println(SU.Gbg("=== TREE ==="))
+	// CntyFS.rootNord.PrintAll(os.Stdout)
+	return CntyFS, nil
+}
