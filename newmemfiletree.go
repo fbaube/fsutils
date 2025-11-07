@@ -68,10 +68,10 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	//    and then use them to create [*FSItem].
 	// -----------------------------------------
 	var rFPs []string
-	var FSIs []*FU.FSItem
-	var pFSS *FSItemSummaryStats
+	// var FSIs []*FU.FSItem
+	// var pFSS *FU.FSItemSummaryStats
 	rFPs = WalkFSforFilepathSlice(pMFT.FS())
-	FSIs, pFSS = FU.NewFSItemSliceFromFilepathSlice(rFPs)
+	// FSIs, pFSS := FU.NewFSItemSliceFromFilepathSlice(rFPs)
 	// -------------------------------------------
 	// 2. Use the slice of FSItem'ss to build a
 	//    slice of FileTreeNodes (which are just
