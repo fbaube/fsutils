@@ -3,7 +3,7 @@ package fsutils
 import (
 	"io/fs"
 
-	ON "github.com/fbaube/orderednodes"
+	NOrK "github.com/fbaube/nork"
 )
 
 // https://pkg.go.dev/io/fs
@@ -50,25 +50,25 @@ import (
 // - knowing the CWD would be necessary to compute it.
 // Rel calls Clean on the result.
 
-// NordFSer is implemented by all types that assemble a tree of Nords.
+// NorkFSer is implemented by all types that assemble a tree of Norks.
 // NOTE: This godoc is clearly out of date. 
 // 
 // NOTE: For working with actual files and directories, use the superset
-// FileNordFSer instead. The godoc for this interface describes methods
+// FileNorkFSer instead. The godoc for this interface describes methods
 // common to both.
 //
-// NordFSer is what an mcfile.Contentity (including directories) should
+// NorkFSer is what an mcfile.Contentity (including directories) should
 // implement: Open, Readfile, Stat, and ReadDir.
 // Then a Contentity can be treated like an fs.File, and
 // the latter three methods can be delegated to by the FS itself.
 //
-// Tipicly a NordFSer is a tree of tags (e.g. an AST) parsed from an XML file.
+// Tipicly a NorkFSer is a tree of tags (e.g. an AST) parsed from an XML file.
 // The tag name is the last tag element of the abs.path and/or the rel.path,
 // but possibly the relative path is just the tag name. Furthermore, calling
 // Open (the only method specified in the fs.FS interface) returns the tag's
 // body (from opening tag to closing tag, inclusive) of that tag only, without
 // the context of the larger tag tree.
-type NordFSer interface {
+type NorkFSer interface {
 	// Interface fs.FS is the minimum required of an fs file system.
 	// The Open(path) method is its only method. It opens the named
 	// file. An error should be of type *PathError with the Op "open",
@@ -84,17 +84,17 @@ type NordFSer interface {
 	RootAbsPath() string
 	// AllPaths can be either all absolute paths or all relative paths.
 	AllPaths() []string
-	RootNord() ON.Norder
-	AsSlice() []ON.Norder
-	AsMap() map[string]ON.Norder
+	RootNork()  NOrK.Norker
+	AsSlice() []NOrK.Norker
+	AsMap() map[string]NOrK.Norker
 }
 
-// FileNordFSer is implemented by all types that assemble a tree of
-// Nords and embed an fs.FS . For working with tags (or anything else
-// that is not actual files and directories), use NordFSer instead.
-// The godoc for this interface describes methods unique to FileNordFSer.
+// FileNorkFSer is implemented by all types that assemble a tree of
+// Norks and embed an fs.FS . For working with tags (or anything else
+// that is not actual files and directories), use NorkFSer instead.
+// The godoc for this interface describes methods unique to FileNorkFSer.
 //
-// A FileTree NordFSer is a collection of files & directories - either
+// A FileTree NorkFSer is a collection of files & directories - either
 // (1) hierarchically gathered & organized (when a directory tree is walked,
 // like in a fs.DirTreeFS), or (b) listed individually (like in a DITA map
 // or a MapFS or a list of materialized paths). The file or directory name
@@ -103,8 +103,8 @@ type NordFSer interface {
 //
 // Note that fs.File is an interface that provides just three methods:
 // Stat() (FileInfo, error) ; Read([]byte) (int, error) ; Close() error
-type FileNordFSer interface {
-	NordFSer
+type FileNorkFSer interface {
+	NorkFSer
 	// InputFS is undefined for a TagTree.
 	InputFS() fs.FS
 	// DirCount returns zero if the FS is a TagTree.

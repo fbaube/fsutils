@@ -8,10 +8,10 @@ import(
 type MemFileTree struct {
      *os.Root
      RootPaths   *FU.Filepaths
-     RootNode    *FileTreeNode // but.. DRY ?!
-     AsSlice   []*FileTreeNode // [0] pts to RootNode
-     AsMapOfAbsFP map[string]*FileTreeNode 
-     AsMapOfRelFP map[string]*FileTreeNode 
+     RootNode    *FileTreeNork // but.. DRY ?!
+     AsSlice   []*FileTreeNork // [0] pts to RootNode
+     AsMapOfAbsFP map[string]*FileTreeNork 
+     AsMapOfRelFP map[string]*FileTreeNork 
      *FU.FSItemSummaryStats 
 }
 

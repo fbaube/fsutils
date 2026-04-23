@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/fbaube/fsutils"
-	ON "github.com/fbaube/orderednodes"
+	NOrK "github.com/fbaube/nork"
 )
 
 type ContentityFS interface {
 	fs.FS
-	ON.Norder
+	NOrK.Nork
 	NewContentityRoot(path string)
 	GetContentityRoot()
 	// The first walk generates PathProps.
