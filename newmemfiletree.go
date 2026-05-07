@@ -32,7 +32,7 @@ import (
 //  - is a directory or a symlink to a directory
 //
 // The only error returns for this func are:
-//  - a bad path, rejected by func FU.NewFilepaths
+//  - a bad path, rejected by func FU.newFilepaths
 //  - the path is not a directory (altho it can be
 //    a symlink to a directory ?)
 //  - filepath-specific errors are in interface
