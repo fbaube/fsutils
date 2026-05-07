@@ -8,12 +8,12 @@ import(
 // FileTreeNork is TBS.
 type FileTreeNork struct {
      NOrK.Nork
-     Fsi FU.FSItem
+     FSO FU.FSObject
 }
 
 func NewFileTreeNork(absPath string) *FileTreeNork {
      p := new(FileTreeNork)
-     p.Fsi = *FU.NewFSItem(absPath)
+     p.FSO = *FU.NewFSObject(absPath)
      return p
 }
 

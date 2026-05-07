@@ -12,6 +12,6 @@ type MemFileTree struct {
      AsSlice   []*FileTreeNork // [0] pts to RootNode
      AsMapOfAbsFP map[string]*FileTreeNork 
      AsMapOfRelFP map[string]*FileTreeNork 
-     *FU.FSItemSummaryStats 
+     *FU.FSObjectSummaryStats 
 }
 

@@ -3,19 +3,19 @@
 Naming the object is a problem. It stores an in-memmory copy of
 a small filesystem but it does not provide the API of io/fs.FS .
 
-It provides tree structure for a collection of fileutils/FSItem's
+It provides tree structure for a collection of fileutils/FSObject's
 and it records this structure in multiple, redundant ways (enabling
 a certain level of error checking).
 
-So in a name for the object, FSItem is unnecessary because a name
+So in a name for the object, FSObject is unnecessary because a name
 involving Tree implicitly has nodes for directories. 
 
-So, not FSItemFS. FSITree? FSIBundle? FileTree? FileMemTree? MemFileTree? 
+So, not FSObjectFS. FSITree? FSIBundle? FileTree? FileMemTree? MemFileTree? 
 
 Package fsutils provides a MemFileTree, which is summarised as:
  - Created from a filesystem path
  - Created using an os/Root, which is saved but unexported 
- - Each node contains a fileutils/FSItem
+ - Each node contains a fileutils/FSObject
  - Tree structure is provided for each node by an orderednodes/Nord
  - Items can be selectively omitted from the tree at its creation time 
  - Note that the "next step up" from this is an mcm/ContentityFS 
@@ -31,14 +31,14 @@ Package fsutils provides a MemFileTree, which is summarised as:
 A similar technique will be used to create an improved version
 of mcm/ContentityFS (and maybe rename it to Contentitree).
 
-MemFileTree will provide read-write capability for individual FSItem's,
-but adding and deleting entire FSItems by name may prove very difficult,
+MemFileTree will provide read-write capability for individual FSObject's,
+but adding and deleting entire FSObjects by name may prove very difficult,
 depending on how orderednode/Nord implements tree structure. 
 
 In the interest of simplicity and composibility, a new MemFileTree can
 be created stepwise, like so: 
  - Walk the os.Root to gather a slice of simple strings of filepaths
- - Use that slice to build a slice of (ptrs to) fileutils/FSItems's
+ - Use that slice to build a slice of (ptrs to) fileutils/FSObjects's
  - Use the information gathered, and input arguments, to filter out entries 
  - (Optional) Provide user interactivity for filtering out additional entries
  - (If needed) Compress the slice, by removing nil entries 
@@ -47,7 +47,7 @@ be created stepwise, like so:
    implemented by orderednodes/Nord), and provide other means of access,
    such as a map from filepaths 
 
-fileutils/FSItem implements four interfaces:
+fileutils/FSObject implements four interfaces:
  - [io/fs.FileInfo]
  - [io/fs.DirEntry]
  - [fileutils.Errer] (via an embed) 

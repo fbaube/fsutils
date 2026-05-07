@@ -15,7 +15,7 @@ import (
 // NewMemFileTree proceeds as follows:
 //  1. Walk the FS of a new [os.Root] to get a slice of filepath strings
 //  2. Use that slice to build a slice of (ptrs to) [FileTreeNork] (via 
-//     ptrs to [*fileutils/FSItem])
+//     ptrs to [*fileutils/FSObject])
 //  3. Provide the hierarchical/tree structure, by "weaving" the slice 
 //     together (i.e. linking parents and children, probably using more 
 //     than one method as implemented by [orderednodes/Nord]), and provide 
@@ -50,7 +50,7 @@ import (
 // .
 func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	var e error
-	// var pFSS = new(FU.FSItemSummaryStats)
+	// var pFSS = new(FU.FSObjectSummaryStats)
 
 	L.L.Info("Making NewMemFileTree: " + aPath)
 	// -------------------------------
@@ -65,21 +65,21 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	// -----------------------------------------
 	// 1. Walk the os.Root's FS to gather a
 	//    slice of simple strings of filepaths,
-	//    and then use them to create [*FSItem].
+	//    and then use them to create [*FSObject].
 	// -----------------------------------------
 	var rFPs []string
-	// var FSIs []*FU.FSItem
-	// var pFSS *FU.FSItemSummaryStats
+	// var FSIs []*FU.FSObject
+	// var pFSS *FU.FSObjectSummaryStats
 	rFPs = WalkFSforFilepathSlice(pMFT.FS())
-	// FSIs, pFSS := FU.NewFSItemSliceFromFilepathSlice(rFPs)
+	// FSIs, pFSS := FU.NewFSObjectSliceFromFilepathSlice(rFPs)
 	// -------------------------------------------
-	// 2. Use the slice of FSItem'ss to build a
+	// 2. Use the slice of FSObject'ss to build a
 	//    slice of FileTreeNorks (which are just
-	//    [Nord] plus [FSItem]) and the two maps 
+	//    [Nord] plus [FSObject]) and the two maps 
 	// ---------------------------------------------
 	// FSIs is the same length as rFPs and each element
 	// of FSIs implements interface [Errer]. So upgrade 
-	// FSItems that do not have errors to FileTreeNork's.
+	// FSObjects that do not have errors to FileTreeNork's.
 	// --------------------------------------------------
 	// pMFT.AsSlice   = make(         []*FileTreeNork, 0)
 	pMFT.AsMapOfAbsFP = make(map[string]*FileTreeNork)
@@ -93,7 +93,7 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	    /* absPathToUse := FU.EnsureTrailingPathSep(
 		  	       FP.Join(pMFT.RootPaths.AbsFP, inPath)) */
 	    pFTN := NewFileTreeNork(sFP) // (absPathToUse)
-	    pFSI := &(pFTN.Fsi)
+	    pFSI := &(pFTN.FSO)
 	    if pFSI.HasError() {
 	        e = pFSI.GetError()
 		L.L.Error("New FileTreeNork(%s) failed: %T %+v", sFP, e, e)
@@ -162,14 +162,14 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	       L.L.Error ("OOPS, pMFT.asSlice[%02d] is NIL", ii)
 	       continue
 	    }
-	    /* if ftn.FSItem == nil || ftn.FSItem.FileMeta == nil {
+	    /* if ftn.FSObject == nil || ftn.FSObject.FileMeta == nil {
 	       L.L.Error("WTF, man!")
 	       continue } */
-	    if ftn.Fsi.IsDirlike() {
+	    if ftn.FSO.IsDirlike() {
 	        L.L.Debug("[%02d] isDIRLIKE: AbsFP: %s",
-			ii, ftn.Fsi.FPs.AbsFP)
+			ii, ftn.FSO.FPs.AbsFP)
 	    } else {
-		L.L.Debug("[%02d] MarkupType: %s", ii, ftn.Fsi.TypedRaw.Raw_type)
+		L.L.Debug("[%02d] MarkupType: %s", ii, ftn.FSO.TypedRaw.Raw_type)
 	    }
 	}
 
