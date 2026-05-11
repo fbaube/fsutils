@@ -7,14 +7,13 @@ import (
 	S "strings"
 
 	FU "github.com/fbaube/fileutils"
-	// SU "github.com/fbaube/stringutils"
-	// CT "github.com/fbaube/ctoken"
+	N  "github.com/fbaube/nork"
 	L "github.com/fbaube/mlog"
 )
 
 // NewMemFileTree proceeds as follows:
 //  1. Walk the FS of a new [os.Root] to get a slice of filepath strings
-//  2. Use that slice to build a slice of (ptrs to) [FileTreeNork] (via 
+//  2. Use that slice to build a slice of (ptrs to) [N.FSONork] (via 
 //     ptrs to [*fileutils/FSObject])
 //  3. Provide the hierarchical/tree structure, by "weaving" the slice 
 //     together (i.e. linking parents and children, probably using more 
@@ -74,29 +73,29 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	// FSIs, pFSS := FU.NewFSObjectSliceFromFilepathSlice(rFPs)
 	// -------------------------------------------
 	// 2. Use the slice of FSObject'ss to build a
-	//    slice of FileTreeNorks (which are just
+	//    slice of N.FSONorks (which are just
 	//    [Nord] plus [FSObject]) and the two maps 
 	// ---------------------------------------------
 	// FSIs is the same length as rFPs and each element
 	// of FSIs implements interface [Errer]. So upgrade 
-	// FSObjects that do not have errors to FileTreeNork's.
+	// FSObjects that do not have errors to N.FSONork's.
 	// --------------------------------------------------
-	// pMFT.AsSlice   = make(         []*FileTreeNork, 0)
-	pMFT.AsMapOfAbsFP = make(map[string]*FileTreeNork)
-	pMFT.AsMapOfRelFP = make(map[string]*FileTreeNork)
+	// pMFT.AsSlice   = make(         []*N.FSONork, 0)
+	pMFT.AsMapOfAbsFP = make(map[string]*N.FSONork)
+	pMFT.AsMapOfRelFP = make(map[string]*N.FSONork)
 	// It's a dir IFF it ends in a slash 
 	for _, sFP := range rFPs { // range FSIs !!
 	    // ----------------------------------
 	    //  Form the path of the file-or-dir
-	    //   and make the FileTreeNork
+	    //   and make the N.FSONork
 	    // ----------------------------------
 	    /* absPathToUse := FU.EnsureTrailingPathSep(
 		  	       FP.Join(pMFT.RootPaths.AbsFP, inPath)) */
-	    pFTN := NewFileTreeNork(sFP) // (absPathToUse)
-	    pFSI := &(pFTN.FSO)
+	    pFTN := N.NewFSOLoneNork(sFP) // (absPathToUse)
+	    pFSI := pFTN.FSO
 	    if pFSI.HasError() {
 	        e = pFSI.GetError()
-		L.L.Error("New FileTreeNork(%s) failed: %T %+v", sFP, e, e)
+		L.L.Error("New N.FSONork(%s) failed: %T %+v", sFP, e, e)
 		pMFT.NrErrors++
 		continue // keep on truckin' 
 	    }
@@ -156,7 +155,7 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 
 	// Debuggery
 	var ii int
-	var ftn *FileTreeNork
+	var ftn *N.FSONork
 	for ii, ftn = range pMFT.AsSlice {
 	    if ftn == nil {
 	       L.L.Error ("OOPS, pMFT.asSlice[%02d] is NIL", ii)
@@ -183,7 +182,7 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 	// form, such as TreeFromMaterializedPaths
 	// =========================================
 	var i int
-	var pC *FileTreeNork
+	var pC *N.FSONork
 	for i, pC = range pMFT.AsSlice {
 		if i == 0 { // skip over root 
 			continue
@@ -191,19 +190,19 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 		// ---------------------------
 		//  Shortcut if child of root
 		// ---------------------------
-		if !S.Contains(pC.RelPath(), FU.PathSep) {
+		if !S.Contains(pC.RelFP(), FU.PathSep) {
 			pMFT.RootNode.AddKid(&pC.Nork)
 			continue
 		}
 		// --------------------------
 		//   Get dir portion of path
 		// --------------------------
-		itsDir := FP.Dir(pC.RelPath())
+		itsDir := FP.Dir(pC.RelFP())
 		itsDir = FU.EnsureTrailingPathSep(itsDir)
 		// println(n.Path, "|cnex2|", itsDir)
 		// L.L.Warning("itsDir: " + itsDir)
 		// L.L.Warning("theMap: %+v", pMFT.asMap)
-		var pPar *FileTreeNork
+		var pPar *N.FSONork	
 		var ok bool
 		// PROBLEMS HERE ?
 		// The parent directory should be in the map.
@@ -211,9 +210,9 @@ func NewMemFileTree(aPath string, okayFilexts []string) (*MemFileTree, error) {
 		// up with trailing separators. 
 		if pPar, ok = pMFT.AsMapOfAbsFP[itsDir]; !ok {
 			L.L.Error("findParentInMap: failed for: " +
-				itsDir + " of " + pC.AbsPath())
+				itsDir + " of " + pC.AbsFP())
 			println(fmt.Sprintf("%+v", pMFT.AsMapOfAbsFP))
-			panic(pC.AbsPath())
+			panic(pC.AbsFP())
 		}
 		/*
 		if itsDir != par.AbsFP() { // or, Rel? 

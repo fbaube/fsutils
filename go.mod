@@ -3,9 +3,9 @@ module github.com/fbaube/fsutils
 go 1.26.0
 
 require (
-	github.com/fbaube/fileutils v0.0.0-20260507170204-3b69d11f31eb
+	github.com/fbaube/fileutils v0.0.0-20260508165924-0775e892866d
 	github.com/fbaube/mlog v0.0.0-20240425064535-3b89e3b28a76
-	github.com/fbaube/nork v0.0.0-20260507170733-e53e6dd28fb3
+	github.com/fbaube/nork v0.0.0-20260511122428-191516d59a69
 )
 
 require (
@@ -21,7 +21,7 @@ require (
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mgutz/str v1.2.0 // indirect
 	github.com/nbio/xml v0.0.0-20260302224236-9f64bb3b5a9e // indirect
-	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
-	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a // indirect
+	golang.org/x/sys v0.44.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

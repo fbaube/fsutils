@@ -14,6 +14,8 @@ github.com/fbaube/fileutils v0.0.0-20260507101212-a2184d528cff h1:pQ8MuTZNNuplpz
 github.com/fbaube/fileutils v0.0.0-20260507101212-a2184d528cff/go.mod h1:JTp+gGjWSsusFDnohWXrgTdfkyvevuWJUv481TizQ5Q=
 github.com/fbaube/fileutils v0.0.0-20260507170204-3b69d11f31eb h1:T7HeYI3owgcfbFpeiZTgPZVKhEBRHPG1SSf5X1eqSw0=
 github.com/fbaube/fileutils v0.0.0-20260507170204-3b69d11f31eb/go.mod h1:JTp+gGjWSsusFDnohWXrgTdfkyvevuWJUv481TizQ5Q=
+github.com/fbaube/fileutils v0.0.0-20260508165924-0775e892866d h1:+g1gGl2VtQ1EtASlpeCPBIpWg8V7A+mbhdF2nvKBwkI=
+github.com/fbaube/fileutils v0.0.0-20260508165924-0775e892866d/go.mod h1:wa8+osGHHT64XwOwTBgCIvVZP5R7xW2Yf8aUx9d1pw4=
 github.com/fbaube/humanbytes v0.0.0-20250119091546-d58fbfdd444c h1:k6VDhhlL+FI8nrBAwQDoXyPEKN+MuOtSMaDJfzwnA7E=
 github.com/fbaube/humanbytes v0.0.0-20250119091546-d58fbfdd444c/go.mod h1:WUS3tn4t+FViNsl4VOqYiV51cJNIIeMjLI9fOfm+Ug8=
 github.com/fbaube/logutils v0.0.0-20250316184850-0569e5bc6b6d h1:hH8uBNU6Vasxh9Pf3bzNdA+JFAtckHavpQf+kpmvHC8=
@@ -32,6 +34,8 @@ github.com/fbaube/nork v0.0.0-20260507102250-042a03e67a21 h1:WXur/D+u0rig4a5CU49
 github.com/fbaube/nork v0.0.0-20260507102250-042a03e67a21/go.mod h1:lAf7bzNnNNT3Ko8vHauKRp4LmDA57MlRC2qvw0pyCfE=
 github.com/fbaube/nork v0.0.0-20260507170733-e53e6dd28fb3 h1:L5weJ129pRAzjM01nEVr2iU5RdcTGgymoUsjhAg2uqI=
 github.com/fbaube/nork v0.0.0-20260507170733-e53e6dd28fb3/go.mod h1:e1l7i4qa9sGScVv85m6hKKq77yayy6R6kCV/EpjguGc=
+github.com/fbaube/nork v0.0.0-20260511122428-191516d59a69 h1:i3tBN6oA2TcYxsEBYU8C4jpY0zBng2ysuOA8JHN1Kcs=
+github.com/fbaube/nork v0.0.0-20260511122428-191516d59a69/go.mod h1:e1l7i4qa9sGScVv85m6hKKq77yayy6R6kCV/EpjguGc=
 github.com/fbaube/stringutils v0.0.0-20251201154235-ad2e563d9cda h1:uQfCIFb1v20byONoe7iWNqVOu6tuDmOLZDtTghjP7YI=
 github.com/fbaube/stringutils v0.0.0-20251201154235-ad2e563d9cda/go.mod h1:prND58zPOTp1HSQ59bQl4w239JV0KNPYQZnNDRu5gjk=
 github.com/fbaube/wasmutils v0.0.0-20251129222829-80044fd986ff h1:HzGot5LeI+ls9FEXSoGEKF8YnJ+ajVFvgysHI+zPoP0=
@@ -48,8 +52,12 @@ github.com/nbio/xml v0.0.0-20260302224236-9f64bb3b5a9e h1:OMgr90nBmSVKJNpeowtWts
 github.com/nbio/xml v0.0.0-20260302224236-9f64bb3b5a9e/go.mod h1:990JnYmJZFrx1vI1TALoD6/fCqnWlTx2FrPbYy2wi5I=
 golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f h1:W3F4c+6OLc6H2lb//N1q4WpJkhzJCK5J6kUi1NTVXfM=
 golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f/go.mod h1:J1xhfL/vlindoeF/aINzNzt2Bket5bjo9sdOYzOsU80=
+golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a h1:+3jdDGGB8NGb1Zktc737jlt3/A5f6UlwSzmvqUuufxw=
+golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a/go.mod h1:d2fgXJLVs4dYDHUk5lwMIfzRzSrWCfGZb0ZqeLa/Vcw=
 golang.org/x/sys v0.43.0 h1:Rlag2XtaFTxp19wS8MXlJwTvoh8ArU6ezoyFsMyCTNI=
 golang.org/x/sys v0.43.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
+golang.org/x/sys v0.44.0 h1:ildZl3J4uzeKP07r2F++Op7E9B29JRUy+a27EibtBTQ=
+golang.org/x/sys v0.44.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
