@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/fbaube/fileutils v0.0.0-20260508165924-0775e892866d
 	github.com/fbaube/mlog v0.0.0-20240425064535-3b89e3b28a76
-	github.com/fbaube/nork v0.0.0-20260511122428-191516d59a69
+	github.com/fbaube/nork v0.0.0-20260513174333-f412b25a4b1a
 )
 
 require (
@@ -15,7 +15,7 @@ require (
 	github.com/fbaube/humanbytes v0.0.0-20250119091546-d58fbfdd444c // indirect
 	github.com/fbaube/logutils v0.0.0-20250316184850-0569e5bc6b6d // indirect
 	github.com/fbaube/miscutils v0.0.0-20250126181629-6a2fa9af43b7 // indirect
-	github.com/fbaube/stringutils v0.0.0-20251201154235-ad2e563d9cda // indirect
+	github.com/fbaube/stringutils v0.0.0-20260511123541-ab996b555f8d // indirect
 	github.com/fbaube/wasmutils v0.0.0-20251129222829-80044fd986ff // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect

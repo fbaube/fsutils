@@ -36,8 +36,12 @@ github.com/fbaube/nork v0.0.0-20260507170733-e53e6dd28fb3 h1:L5weJ129pRAzjM01nEV
 github.com/fbaube/nork v0.0.0-20260507170733-e53e6dd28fb3/go.mod h1:e1l7i4qa9sGScVv85m6hKKq77yayy6R6kCV/EpjguGc=
 github.com/fbaube/nork v0.0.0-20260511122428-191516d59a69 h1:i3tBN6oA2TcYxsEBYU8C4jpY0zBng2ysuOA8JHN1Kcs=
 github.com/fbaube/nork v0.0.0-20260511122428-191516d59a69/go.mod h1:e1l7i4qa9sGScVv85m6hKKq77yayy6R6kCV/EpjguGc=
+github.com/fbaube/nork v0.0.0-20260513174333-f412b25a4b1a h1:Y86xmWW5ey92QgxugF/j9ri8YwvSHUICKJNvkiS0lks=
+github.com/fbaube/nork v0.0.0-20260513174333-f412b25a4b1a/go.mod h1:iFOiTIWwfFsoL0OVM50pFa9r0psLhre3ekX/EfGOA5g=
 github.com/fbaube/stringutils v0.0.0-20251201154235-ad2e563d9cda h1:uQfCIFb1v20byONoe7iWNqVOu6tuDmOLZDtTghjP7YI=
 github.com/fbaube/stringutils v0.0.0-20251201154235-ad2e563d9cda/go.mod h1:prND58zPOTp1HSQ59bQl4w239JV0KNPYQZnNDRu5gjk=
+github.com/fbaube/stringutils v0.0.0-20260511123541-ab996b555f8d h1:aVchLvgOjt7ZkT4xOyl0BwOOI298EORLsu1W9hYqRdY=
+github.com/fbaube/stringutils v0.0.0-20260511123541-ab996b555f8d/go.mod h1:prND58zPOTp1HSQ59bQl4w239JV0KNPYQZnNDRu5gjk=
 github.com/fbaube/wasmutils v0.0.0-20251129222829-80044fd986ff h1:HzGot5LeI+ls9FEXSoGEKF8YnJ+ajVFvgysHI+zPoP0=
 github.com/fbaube/wasmutils v0.0.0-20251129222829-80044fd986ff/go.mod h1:0toxIvnxI8IGqg8bRnvbHiVCWlplqXAlrbGNrmCgtMA=
 github.com/mattn/go-colorable v0.1.14 h1:9A9LHSqF/7dyVVX6g0U9cwm9pG3kP9gSzcuIPHPsaIE=
